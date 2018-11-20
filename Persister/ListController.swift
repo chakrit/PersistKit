@@ -29,10 +29,7 @@ class ListController: UIViewController {
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         alertController.addAction(UIAlertAction(title: "Confirm", style: .default, handler: { [weak self] (action) in
             DispatchQueue.main.async {
-                guard let description = alertController.textFields?.first?.text else {
-                    return // no input or text field misconfigured
-                }
-
+                guard let description = alertController.textFields?.first?.text else { return }
                 self?.viewModel.add(item: TodoItem(new: description))
                 self?.tableView.reloadData()
             }
@@ -57,6 +54,19 @@ extension ListController: UITableViewDataSource {
 
         let todoItem = self.viewModel.todoItems[indexPath.row]
         cell.textLabel?.text = todoItem.description
+        if todoItem.completed {
+            cell.textLabel?.textColor = UIColor.lightGray
+        } else {
+            cell.textLabel?.textColor = UIColor.black
+        }
         return cell
+    }
+}
+
+extension ListController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let todoItem = self.viewModel.todoItems[indexPath.row]
+        _ = self.viewModel.toggle(item: todoItem)
+        tableView.reloadData()
     }
 }

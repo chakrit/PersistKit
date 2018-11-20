@@ -39,18 +39,13 @@ struct UpsertStatement: Statement {
     }
 
     func bindTo(statement: OpaquePointer?) -> Bool {
-        guard let idChars = record.identifier.cString(using: .utf8) else { return false }
-        guard let kindChars = record.kind.cString(using: .utf8) else { return false }
-
-        guard sqlite3_bind_text(statement, 1, idChars, Int32(idChars.count), nil) == SQLITE_OK else { return false }
-        guard sqlite3_bind_text(statement, 2, kindChars, Int32(kindChars.count), nil) == SQLITE_OK else { return false }
+        guard let idData = record.identifier.data(using: .utf8) else { return false }
+        guard let kindData = record.identifier.data(using: .utf8) else { return false }
+        
+        guard idData.withUnsafeBytes({ (ptr) -> Int32 in sqlite3_bind_text(statement, 1, ptr, Int32(idData.count), nil) }) == SQLITE_OK else { return false }
+        guard kindData.withUnsafeBytes({ (ptr) -> Int32 in sqlite3_bind_text(statement, 2, ptr, Int32(kindData.count), nil) }) == SQLITE_OK else { return false }
         guard sqlite3_bind_int(statement, 3, Int32(record.flags)) == SQLITE_OK else { return false }
-
-        let boundContent = record.content.withUnsafeBytes { (bytes) -> Int32 in
-            sqlite3_bind_blob(statement, 4, bytes, Int32(self.record.content.count), nil)
-        }
-
-        guard boundContent == SQLITE_OK else { return false }
+        guard record.content.withUnsafeBytes({ (bytes) -> Int32 in sqlite3_bind_blob(statement, 4, bytes, Int32(self.record.content.count), nil) }) == SQLITE_OK else { return false }
         return true
     }
 }

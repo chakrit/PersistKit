@@ -11,9 +11,21 @@ class ListViewModel {
     }
 
     func add(item: TodoItem) {
-        print("adding item")
         db.save(item)
         todoItems = db.loadAll()
+    }
+    
+    func toggle(item: TodoItem) -> TodoItem {
+        var newItem = item        
+        if item.completed {
+            newItem = TodoItem(uncomplete: item)
+        } else {
+            newItem = TodoItem(complete: item)
+        }
+        
+        db.save(newItem)
+        todoItems = db.loadAll()
+        return newItem
     }
 
     private static func loadDatabase() -> Database {
