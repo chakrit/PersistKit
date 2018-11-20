@@ -8,14 +8,14 @@ protocol Statement {
 
 struct CreateStatement: Statement {
     let sql: String = """
-        CREATE TABLE IF NOT EXISTS data (
+        CREATE TABLE IF NOT EXISTS records (
             identifier TEXT PRIMARY KEY UNIQUE NOT NULL,
             kind       TEXT NOT NULL,
             flags      INTEGER NOT NULL,
             content    BLOB NOT NULL
         );
 
-        CREATE INDEX data_identifier_pkey ON data (identifier);
+        CREATE INDEX records_identifier_pkey ON records (identifier);
     """
 
     func bindTo(statement: OpaquePointer?) -> Bool {
@@ -25,7 +25,7 @@ struct CreateStatement: Statement {
 
 struct UpsertStatement: Statement {
     let sql: String = """
-        INSERT INTO data (identifier, kind, flags, content)
+        INSERT INTO records (identifier, kind, flags, content)
         VALUES (?, ?, ?, ?)
         ON CONFLICT(identifier) DO
             UPDATE SET kind = excluded.kind,
@@ -52,7 +52,7 @@ struct UpsertStatement: Statement {
 
 struct SelectIdentifierStatement: Statement {
     let sql: String = """
-        SELECT * FROM data WHERE identifier = ?;
+        SELECT * FROM records WHERE identifier = ?;
     """
 
     let identifier: String
@@ -69,7 +69,7 @@ struct SelectIdentifierStatement: Statement {
 
 struct SelectAllStatement: Statement {
     let sql: String = """
-        SELECT * FROM data;
+        SELECT * FROM records;
     """
 
     func bindTo(statement: OpaquePointer?) -> Bool {

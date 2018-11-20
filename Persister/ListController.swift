@@ -54,6 +54,7 @@ extension ListController: UITableViewDataSource {
 
         let todoItem = self.viewModel.todoItems[indexPath.row]
         cell.textLabel?.text = todoItem.description
+        
         if todoItem.completed {
             cell.textLabel?.textColor = UIColor.lightGray
         } else {
