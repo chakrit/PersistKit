@@ -30,12 +30,12 @@ class MainActivity : AppCompatActivity() {
         background.execute {
             val items: List<TodoItem> = storage.loadAll()
             handler.post {
-                adapter.todoItems = items
+                adapter.setItems(items)
             }
         }
 
-        main_recycler_view.layoutManager = LinearLayoutManager(this)
         main_recycler_view.adapter = adapter
+        main_recycler_view.layoutManager = LinearLayoutManager(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             storage.save(item)
             val newList: List<TodoItem> = storage.loadAll()
             handler.post {
-                adapter.todoItems = newList
+                adapter.setItems(newList)
             }
         }
 
