@@ -20,14 +20,25 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private val adapter = TodoListAdapter()
+    private val adapter = TodoListAdapter(object : OnItemSelectListener {
+        override fun onSelected(item: TodoItem) {
+            background.execute {
+                val selectedItem = item.copy(completed = !item.completed)
+                storage.save(selectedItem)
+                loadTodoListItems()
+            }
+        }
+
+    })
+
     private val background = Executors.newSingleThreadExecutor()!!
+    private val handler = Handler()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val handler = Handler()
         background.execute {
             val items: List<TodoItem> = storage.loadAll()
             handler.post {
@@ -59,13 +70,9 @@ class MainActivity : AppCompatActivity() {
             val randomId = UUID.randomUUID().toString()
 
             val item = TodoItem(randomId, title, false)
-            val handler = Handler()
             background.execute {
                 storage.save(item)
-                val newList: List<TodoItem> = storage.loadAll()
-                handler.post {
-                    adapter.setItems(newList)
-                }
+                loadTodoListItems()
             }
         }
         return true
@@ -82,5 +89,14 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton(R.string.create_todo_create_button_title) { _, _ -> okListener.invoke(editText.text.toString()) }
             .setNegativeButton(R.string.create_todo_cancel_button_title, null)
             .show()
+    }
+
+    private fun loadTodoListItems() {
+        background.execute {
+            val newList: List<TodoItem> = storage.loadAll()
+            handler.post {
+                adapter.setItems(newList)
+            }
+        }
     }
 }
