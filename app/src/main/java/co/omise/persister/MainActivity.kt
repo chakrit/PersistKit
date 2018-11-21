@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
         main_recycler_view.adapter = adapter
         main_recycler_view.layoutManager = LinearLayoutManager(this)
+        main_recycler_view.addItemDecoration(CustomItemDecoration(this))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
