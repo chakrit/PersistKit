@@ -2,8 +2,9 @@ package co.omise.persister
 
 import android.os.Bundle
 import android.os.Handler
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.room.Room
@@ -12,15 +13,15 @@ import java.util.*
 import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
-    val storage: Storage by lazy {
+    private val storage: Storage by lazy {
         Storage(
             Room.databaseBuilder(applicationContext, KVDatabase::class.java, "mydb")
                 .build()
         )
     }
 
-    val adapter = TodoListAdapter()
-    val background = Executors.newSingleThreadExecutor()
+    private val adapter = TodoListAdapter()
+    private val background = Executors.newSingleThreadExecutor()!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,19 +53,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleNewItemTapped(): Boolean {
-        val randomId = UUID.randomUUID().toString()
-        val randomDescription = UUID.randomUUID().toString()
+        showCreateTodoDialog { title ->
+            if (title.isEmpty()) return@showCreateTodoDialog
 
-        val item = TodoItem(randomId, randomDescription, false)
-        val handler = Handler()
-        background.execute {
-            storage.save(item)
-            val newList: List<TodoItem> = storage.loadAll()
-            handler.post {
-                adapter.setItems(newList)
+            val randomId = UUID.randomUUID().toString()
+
+            val item = TodoItem(randomId, title, false)
+            val handler = Handler()
+            background.execute {
+                storage.save(item)
+                val newList: List<TodoItem> = storage.loadAll()
+                handler.post {
+                    adapter.setItems(newList)
+                }
             }
         }
-
         return true
+    }
+
+    private fun showCreateTodoDialog(okListener: (title: String) -> Unit) {
+        val view: View = LayoutInflater.from(this)
+            .inflate(R.layout.todo_create_dialog, (main_recycler_view.parent as ViewGroup), false)
+        val editText: EditText = view.findViewById(R.id.todo_create_dialog_edit_text)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.create_todo_title)
+            .setView(view)
+            .setPositiveButton(R.string.create_todo_create_button_title) { _, _ -> okListener.invoke(editText.text.toString()) }
+            .setNegativeButton(R.string.create_todo_cancel_button_title, null)
+            .show()
     }
 }
