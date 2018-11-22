@@ -8,6 +8,7 @@ class Storage(val db: KVDatabase) {
         return db.queries()
             .listAll()
             .map { decode<T>(it) }
+            .reversed()
     }
 
     fun <T> save(obj: T) where T : Identifiable, T : Serializable {
